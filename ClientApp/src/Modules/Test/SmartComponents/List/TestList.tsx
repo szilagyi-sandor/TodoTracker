@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 
-import axios from "axios";
+import agent from "Modules/API/agent";
 import { Test } from "Modules/Test/_Interfaces/Test";
 
 export default function TestList() {
   const [tests, setTests] = useState<Test[]>();
 
   useEffect(() => {
-    // TODO: Add config file
-    axios
-      .get("http://localhost:5000/api/tests")
-      .then((response) => setTests(response.data));
+    const list = async () => {
+      const tests = await agent.Tests.listTests();
+
+      setTests(tests);
+    };
+
+    list();
   }, []);
 
   return (
