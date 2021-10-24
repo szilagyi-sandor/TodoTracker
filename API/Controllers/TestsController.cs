@@ -10,23 +10,21 @@ namespace API.Controllers
   public class TestsController : BaseApiController
   {
     [HttpGet]
-    public async Task<ActionResult<List<Test>>> GetTests()
+    public async Task<IActionResult> GetTests()
     {
-      return await Mediator.Send(new List.Query());
+      return HandleResult(await Mediator.Send(new List.Query()));
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Test>> GetTest(Guid id)
+    public async Task<IActionResult> GetTest(Guid id)
     {
-      return await Mediator.Send(new Details.Query { Id = id });
+      return HandleResult(await Mediator.Send(new Details.Query { Id = id }));
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateTest(Test test)
     {
-      await Mediator.Send(new Create.Command { Test = test });
-
-      return Ok();
+      return HandleResult(await Mediator.Send(new Create.Command { Test = test }));
     }
 
     [HttpPut("{id}")]
@@ -34,18 +32,14 @@ namespace API.Controllers
     {
       test.Id = id;
 
-      await Mediator.Send(new Edit.Command { Test = test });
-
-      return Ok();
+      return HandleResult(await Mediator.Send(new Edit.Command { Test = test }));
     }
 
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTest(Guid id)
     {
-      await Mediator.Send(new Delete.Command { Id = id });
-
-      return Ok();
+      return HandleResult(await Mediator.Send(new Delete.Command { Id = id }));
     }
   }
 }

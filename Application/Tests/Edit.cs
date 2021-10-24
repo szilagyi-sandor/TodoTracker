@@ -3,18 +3,28 @@ using MediatR;
 using AutoMapper;
 using Persistence;
 using System.Threading;
+using FluentValidation;
+using Application.Core;
 using System.Threading.Tasks;
 
 namespace Application.Tests
 {
   public class Edit
   {
-    public class Command : IRequest
+    public class Command : IRequest<Result<Unit>>
     {
       public Test Test { get; set; }
     }
 
-    public class Handler : IRequestHandler<Command>
+    public class CommandValidator : AbstractValidator<Command>
+    {
+      public CommandValidator()
+      {
+        RuleFor(x => x.Test).SetValidator(new TestValidator());
+      }
+    }
+
+    public class Handler : IRequestHandler<Command, Result<Unit>>
     {
       private readonly IMapper _mapper;
       private readonly DataContext _context;
@@ -24,15 +34,20 @@ namespace Application.Tests
         _context = context;
       }
 
-      public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
+      public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
       {
         var test = await _context.Tests.FindAsync(request.Test.Id);
 
+        if (test == null) return null;
+
         _mapper.Map(request.Test, test);
 
-        await _context.SaveChangesAsync();
+        var result = await _context.SaveChangesAsync() > 0;
 
-        return Unit.Value;
+        if (!result)
+          return Result<Unit>.Fail("Failed to update the test.");
+
+        return Result<Unit>.Success(Unit.Value);
       }
     }
   }

@@ -6,6 +6,7 @@ import { Test } from "Modules/Test/_Interfaces/Test";
 axios.defaults.baseURL = "http://localhost:5000/api";
 
 // TODO: Add  this based on config file.
+// TODO: Try catch was removed from video.
 // axios.interceptors.response.use(async (response) => {
 //   try {
 //     await sleep(1000);
