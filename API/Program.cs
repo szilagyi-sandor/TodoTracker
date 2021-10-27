@@ -1,10 +1,12 @@
 using System;
+using Domain;
 using Persistence;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace API
@@ -22,9 +24,10 @@ namespace API
       try
       {
         var context = services.GetRequiredService<DataContext>();
+        var userManager = services.GetRequiredService<UserManager<AppUser>>();
         await context.Database.MigrateAsync();
 
-        await Seed.SeedData(context);
+        await Seed.SeedData(context, userManager);
       }
       catch (Exception ex)
       {
@@ -36,10 +39,10 @@ namespace API
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-              webBuilder.UseStartup<Startup>();
-            });
+      Host.CreateDefaultBuilder(args)
+      .ConfigureWebHostDefaults(webBuilder =>
+      {
+        webBuilder.UseStartup<Startup>();
+      });
   }
 }

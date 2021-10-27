@@ -3,7 +3,6 @@ using Domain;
 using Application.Tests;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 
 namespace API.Controllers
 {
