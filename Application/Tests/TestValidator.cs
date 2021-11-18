@@ -1,14 +1,10 @@
-using Domain;
-using FluentValidation;
+namespace Application.Tests;
 
-namespace Application.Tests
+public class TestValidator : AbstractValidator<Test>
 {
-  public class TestValidator : AbstractValidator<Test>
+  public TestValidator()
   {
-    public TestValidator()
-    {
-      RuleFor(x => x.Title).NotEmpty();
-      RuleFor(x => x.Date).NotEmpty();
-    }
+    RuleFor(x => x.Title).NotEmpty();
+    RuleFor(x => x.Date).NotEmpty();
   }
 }

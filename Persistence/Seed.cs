@@ -1,19 +1,12 @@
-using System;
-using Domain;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
+namespace Persistence;
 
-namespace Persistence
+public class Seed
 {
-  public class Seed
+  public static async Task SeedData(DataContext context, UserManager<AppUser> userManager)
   {
-    public static async Task SeedData(DataContext context, UserManager<AppUser> userManager)
+    if (!userManager.Users.Any())
     {
-      if (!userManager.Users.Any())
-      {
-        var users = new List<AppUser>{
+      var users = new List<AppUser>{
           new AppUser {
             UserName = "TestUser",
             Email = "test@test.com",
@@ -21,18 +14,18 @@ namespace Persistence
           }
         };
 
-        foreach (var user in users)
-        {
-          await userManager.CreateAsync(user, "Pa$$w0rd");
-        }
-      }
-
-      if (context.Tests.Any())
+      foreach (var user in users)
       {
-        return;
+        await userManager.CreateAsync(user, "Pa$$w0rd");
       }
+    }
 
-      var tests = new List<Test>
+    if (context.Tests.Any())
+    {
+      return;
+    }
+
+    var tests = new List<Test>
         {
           new Test
             {
@@ -86,9 +79,8 @@ namespace Persistence
             }
         };
 
-      await context.Tests.AddRangeAsync(tests);
+    await context.Tests.AddRangeAsync(tests);
 
-      await context.SaveChangesAsync();
-    }
+    await context.SaveChangesAsync();
   }
 }

@@ -1,13 +1,9 @@
-using Domain;
-using AutoMapper;
+namespace Application.Core;
 
-namespace Application.Core
+public class MappingProfiles : Profile
 {
-  public class MappingProfiles : Profile
+  public MappingProfiles()
   {
-    public MappingProfiles()
-    {
-      CreateMap<Test, Test>();
-    }
+    CreateMap<Test, Test>();
   }
 }

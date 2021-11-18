@@ -1,34 +1,25 @@
-using Domain;
-using System;
-using MediatR;
-using Persistence;
-using System.Threading;
-using System.Threading.Tasks;
-using Application.Core;
+namespace Application.Tests;
 
-namespace Application.Tests
+public class Details
 {
-  public class Details
+  public class Query : IRequest<Result<Test>>
   {
-    public class Query : IRequest<Result<Test>>
+    public Guid Id { get; set; }
+  }
+
+  public class Handler : IRequestHandler<Query, Result<Test>>
+  {
+    private readonly DataContext _context;
+    public Handler(DataContext context)
     {
-      public Guid Id { get; set; }
+      _context = context;
     }
 
-    public class Handler : IRequestHandler<Query, Result<Test>>
+    public async Task<Result<Test>> Handle(Query request, CancellationToken cancellationToken)
     {
-      private readonly DataContext _context;
-      public Handler(DataContext context)
-      {
-        _context = context;
-      }
+      var test = await _context.Tests.FindAsync(request.Id);
 
-      public async Task<Result<Test>> Handle(Query request, CancellationToken cancellationToken)
-      {
-        var test = await _context.Tests.FindAsync(request.Id);
-
-        return Result<Test>.Success(test);
-      }
+      return Result<Test>.Success(test);
     }
   }
 }

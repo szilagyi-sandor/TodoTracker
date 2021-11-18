@@ -1,54 +1,44 @@
-using Domain;
-using MediatR;
-using AutoMapper;
-using Persistence;
-using System.Threading;
-using FluentValidation;
-using Application.Core;
-using System.Threading.Tasks;
+namespace Application.Tests;
 
-namespace Application.Tests
+public class Edit
 {
-  public class Edit
+  public class Command : IRequest<Result<Unit>>
   {
-    public class Command : IRequest<Result<Unit>>
+    public Test Test { get; set; }
+  }
+
+  public class CommandValidator : AbstractValidator<Command>
+  {
+    public CommandValidator()
     {
-      public Test Test { get; set; }
+      RuleFor(x => x.Test).SetValidator(new TestValidator());
+    }
+  }
+
+  public class Handler : IRequestHandler<Command, Result<Unit>>
+  {
+    private readonly IMapper _mapper;
+    private readonly DataContext _context;
+    public Handler(DataContext context, IMapper mapper)
+    {
+      _mapper = mapper;
+      _context = context;
     }
 
-    public class CommandValidator : AbstractValidator<Command>
+    public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
     {
-      public CommandValidator()
-      {
-        RuleFor(x => x.Test).SetValidator(new TestValidator());
-      }
-    }
+      var test = await _context.Tests.FindAsync(request.Test.Id);
 
-    public class Handler : IRequestHandler<Command, Result<Unit>>
-    {
-      private readonly IMapper _mapper;
-      private readonly DataContext _context;
-      public Handler(DataContext context, IMapper mapper)
-      {
-        _mapper = mapper;
-        _context = context;
-      }
+      if (test == null) return null;
 
-      public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
-      {
-        var test = await _context.Tests.FindAsync(request.Test.Id);
+      _mapper.Map(request.Test, test);
 
-        if (test == null) return null;
+      var result = await _context.SaveChangesAsync() > 0;
 
-        _mapper.Map(request.Test, test);
+      if (!result)
+        return Result<Unit>.Fail("Failed to update the test.");
 
-        var result = await _context.SaveChangesAsync() > 0;
-
-        if (!result)
-          return Result<Unit>.Fail("Failed to update the test.");
-
-        return Result<Unit>.Success(Unit.Value);
-      }
+      return Result<Unit>.Success(Unit.Value);
     }
   }
 }
