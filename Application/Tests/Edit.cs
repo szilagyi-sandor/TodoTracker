@@ -4,7 +4,7 @@ public class Edit
 {
   public class Command : IRequest<Result<Unit>>
   {
-    public Test Test { get; set; }
+    public Test Test { get; set; } = new Test();
   }
 
   public class CommandValidator : AbstractValidator<Command>
@@ -15,7 +15,7 @@ public class Edit
     }
   }
 
-  public class Handler : IRequestHandler<Command, Result<Unit>>
+  public class Handler : IRequestHandler<Command, Result<Unit>?>
   {
     private readonly IMapper _mapper;
     private readonly DataContext _context;
@@ -25,7 +25,7 @@ public class Edit
       _context = context;
     }
 
-    public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
+    public async Task<Result<Unit>?> Handle(Command request, CancellationToken cancellationToken)
     {
       var test = await _context.Tests.FindAsync(request.Test.Id);
 

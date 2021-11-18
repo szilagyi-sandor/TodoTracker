@@ -2,9 +2,9 @@ namespace Application.Core;
 
 public class AppException
 {
-  public AppException(int statusCode, string message, string details = null)
+  public AppException(int statusCode, string message, string? details)
   {
-    Details = details;
+    Details = details ?? "";
     Message = message;
     StatusCode = statusCode;
   }

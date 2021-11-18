@@ -6,5 +6,5 @@ public class DataContext : IdentityDbContext<AppUser>
   {
   }
 
-  public DbSet<Test> Tests { get; set; }
+  public DbSet<Test> Tests => Set<Test>();
 }

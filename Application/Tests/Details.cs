@@ -7,7 +7,7 @@ public class Details
     public Guid Id { get; set; }
   }
 
-  public class Handler : IRequestHandler<Query, Result<Test>>
+  public class Handler : IRequestHandler<Query, Result<Test>?>
   {
     private readonly DataContext _context;
     public Handler(DataContext context)
@@ -15,7 +15,7 @@ public class Details
       _context = context;
     }
 
-    public async Task<Result<Test>> Handle(Query request, CancellationToken cancellationToken)
+    public async Task<Result<Test>?> Handle(Query request, CancellationToken cancellationToken)
     {
       var test = await _context.Tests.FindAsync(request.Id);
 

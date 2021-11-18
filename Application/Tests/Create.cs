@@ -4,7 +4,7 @@ public class Create
 {
   public class Command : IRequest<Result<Unit>>
   {
-    public Test Test { get; set; }
+    public Test Test { get; set; } = new Test();
   }
 
   public class CommandValidator : AbstractValidator<Command>
