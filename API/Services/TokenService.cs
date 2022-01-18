@@ -1,38 +1,50 @@
-namespace API.Services;
-
-public class TokenService
+namespace API.Services
 {
-  public IConfiguration _config { get; set; }
-  public TokenService(IConfiguration config)
+  // CHECKED 1.0
+  public class TokenService
   {
-    _config = config;
-  }
+    private readonly IConfiguration _config;
+    private readonly UserManager<AppUser> _userManager;
 
-  public string CreateToken(AppUser user)
-  {
-    var claims = new List<Claim>
-        {
-          new Claim(ClaimTypes.Name, user.UserName),
-          new Claim(ClaimTypes.NameIdentifier, user.Id),
-          new Claim(ClaimTypes.Email, user.Email),
-        };
-
-    // TODO: secret storage
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"]));
-    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-    // TODO: Token refresh modifications
-    var tokenDescriptor = new SecurityTokenDescriptor
+    public TokenService(IConfiguration config, UserManager<AppUser> userManager)
     {
-      Subject = new ClaimsIdentity(claims),
-      Expires = DateTime.Now.AddDays(7),
-      SigningCredentials = creds
-    };
+      _config = config;
+      _userManager = userManager;
+    }
 
-    var tokenHandler = new JwtSecurityTokenHandler();
+    public async Task<string> CreateToken(AppUser user)
+    {
+      var claims = new List<Claim>
+      {
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(CustomClaimTypes.UserStatus.ToString(), user.Status.ToString()),
+      };
 
-    var token = tokenHandler.CreateToken(tokenDescriptor);
+      var roles = await _userManager.GetRolesAsync(user);
 
-    return tokenHandler.WriteToken(token);
+      foreach (var role in roles)
+      {
+        claims.Add(new Claim(ClaimTypes.Role, role));
+      }
+
+      // TODO: secret storage
+      var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["TokenKey"]));
+
+      var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+      // TODO: Token refresh modifications
+      var tokenDescriptor = new SecurityTokenDescriptor
+      {
+        Subject = new ClaimsIdentity(claims),
+        Expires = DateTime.Now.AddDays(7),
+        SigningCredentials = creds
+      };
+
+      var tokenHandler = new JwtSecurityTokenHandler();
+
+      var token = tokenHandler.CreateToken(tokenDescriptor);
+
+      return tokenHandler.WriteToken(token);
+    }
   }
 }

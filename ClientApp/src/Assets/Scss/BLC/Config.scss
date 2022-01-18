@@ -1,0 +1,57 @@
+// Colors.
+$color: #202a42;
+$backgroundColor: #fff;
+
+$primaryColor: #3e8bff;
+
+$successColor: #119830;
+$warningColor: #e2b21f;
+$errorColor: #dc3545;
+
+// Fonts.
+$font: Verdana, sans-serif;
+$headingFont: Georgia, serif;
+
+// Breakpoints.
+$smMin: 576px;
+$smMax: $smMin - 1;
+$mdMin: 768px;
+$mdMax: $mdMin - 1;
+$lgMin: 992px;
+$lgMax: $lgMin - 1;
+$xlMin: 1200px;
+$xlMax: $xlMin - 1;
+$xxlMin: 1700px;
+$xxlMax: $xxlMin - 1;
+
+// Grid.
+$gridContainerSmWidth: 540px;
+$gridContainerMdWidth: 720px;
+$gridContainerLgWidth: 960px;
+$gridContainerXlWidth: 1140px;
+$gridContainerXxlWidth: 1620px;
+
+$gridPadding: 15px;
+
+$gridMapper: (
+  sm: (
+    break: $smMin,
+    width: $gridContainerSmWidth,
+  ),
+  md: (
+    break: $mdMin,
+    width: $gridContainerMdWidth,
+  ),
+  lg: (
+    break: $lgMin,
+    width: $gridContainerLgWidth,
+  ),
+  xl: (
+    break: $xlMin,
+    width: $gridContainerXlWidth,
+  ),
+  xxl: (
+    break: $xxlMin,
+    width: $gridContainerXxlWidth,
+  ),
+);

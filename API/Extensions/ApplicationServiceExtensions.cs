@@ -1,59 +1,68 @@
-namespace API.Extensions;
+using Application.Users;
 
-public static class ApplicationServiceExtensions
+namespace API.Extensions
 {
-  public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
+  // CHECKED 1.0
+  public static class ApplicationServiceExtensions
   {
-    services.AddSwaggerGen(c =>
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
     {
-      c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
-
-      c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+      services.AddSwaggerGen(c =>
       {
-        In = ParameterLocation.Header,
-        Description = "Please insert JWT token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-      });
-      c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+        c.CustomSchemaIds(x => x.FullName);
+
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
+          Scheme = "Bearer",
+          Name = "Authorization",
+          In = ParameterLocation.Header,
+          Description = "JWT auth header",
+          Type = SecuritySchemeType.ApiKey,
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {{
           new OpenApiSecurityScheme
           {
             Reference = new OpenApiReference
             {
               Type = ReferenceType.SecurityScheme,
               Id = "Bearer"
-            }
             },
-            new string[] { }
-          }
+            Scheme = "oauth2",
+            Name = "Bearer",
+            In = ParameterLocation.Header
+          },
+          new List<string>()
+        }});
       });
-    });
 
-    services.AddDbContext<DataContext>(opt =>
-    {
-      opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
-    });
-
-    services.AddCors(opt =>
-    {
-      opt.AddPolicy("CorsPolicy", policy =>
+      services.AddDbContext<DataContext>(opt =>
       {
-        // TODO: Hardcoded localhost
-        policy
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .WithOrigins("http://localhost:3000");
+        opt.UseSqlite(config.GetConnectionString("DefaultConnection"));
       });
-    });
 
-    // TODO: Change Test handler to a real one.
-    services.AddMediatR(typeof(List.Handler).Assembly);
+      services.AddCors(opt =>
+      {
+        opt.AddPolicy("CorsPolicy", policy =>
+        {
+          // TODO: Hardcoded localhost
+          policy
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithOrigins("http://localhost:3000");
+        });
+      });
 
-    services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+      services.AddMediatR(typeof(List.Handler).Assembly);
 
-    return services;
+      services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+      services.AddScoped<IUserAccessor, UserAccessor>();
+
+      return services;
+    }
   }
 }

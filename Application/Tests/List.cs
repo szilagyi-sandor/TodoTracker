@@ -1,22 +1,23 @@
-namespace Application.Tests;
-
-public class List
+namespace Application.Tests
 {
-  public class Query : IRequest<Result<List<Test>>> { }
-
-  public class Handler : IRequestHandler<Query, Result<List<Test>>>
+  public class List
   {
-    private readonly DataContext _context;
-    public Handler(DataContext context)
-    {
-      _context = context;
-    }
+    public class Query : IRequest<Result<List<Test>>> { }
 
-    public async Task<Result<List<Test>>> Handle(Query request, CancellationToken cancellationToken)
+    public class Handler : IRequestHandler<Query, Result<List<Test>>>
     {
-      var tests = await _context.Tests.ToListAsync();
+      private readonly DataContext _context;
+      public Handler(DataContext context)
+      {
+        _context = context;
+      }
 
-      return Result<List<Test>>.Success(tests);
+      public async Task<Result<List<Test>>> Handle(Query request, CancellationToken cancellationToken)
+      {
+        var tests = await _context.Tests.ToListAsync();
+
+        return Result<List<Test>>.Success(tests);
+      }
     }
   }
 }

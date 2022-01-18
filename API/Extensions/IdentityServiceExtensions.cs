@@ -1,39 +1,49 @@
-namespace API.Extensions;
-
-public static class IdentityServiceExtensions
+namespace API.Extensions
 {
-  public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
+  // CHECKED 1.0
+  public static class IdentityServiceExtensions
   {
-    // TODO: #1 UserRoles: Here AddIdentityCore says it does not add roles automatically.
-    services
-    .AddIdentityCore<AppUser>(opt =>
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
     {
-        // TODO: things can be configured here
-        // opt.Password.RequireNonAlphanumeric = false;
-      })
-    .AddEntityFrameworkStores<DataContext>()
-    .AddSignInManager<SignInManager<AppUser>>();
+      services
+        .AddIdentityCore<AppUser>(opt =>
+        {
+          opt.User.RequireUniqueEmail = true;
+        })
+        .AddRoles<Role>()
+        .AddEntityFrameworkStores<DataContext>()
+        .AddSignInManager<SignInManager<AppUser>>();
 
-    // TODO: secret storage
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
+      // TODO: secret storage
+      var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
 
-    services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(opt =>
-    {
+      services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(opt =>
+        {
 
-      opt.TokenValidationParameters = new TokenValidationParameters
+          opt.TokenValidationParameters = new TokenValidationParameters
+          {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = key,
+            // TODO: Make it more bulletproof by configuring these
+            ValidateIssuer = false,
+            ValidateAudience = false
+          };
+        });
+
+      services.AddSingleton<IAuthorizationHandler, InvalidUserRestrictionHandler>();
+      services.AddSingleton<IAuthorizationHandler, InvalidStatusRestrictionHandler>();
+
+      services.AddAuthorization(options =>
       {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = key,
-          // TODO: Make it more bulletproof by configuring these
-          ValidateIssuer = false,
-        ValidateAudience = false
-      };
-    });
+        options.AddPolicy("InvalidUserRestriction", policy => policy.AddRequirements(new InvalidUserRestrictionRequirement()));
+        options.AddPolicy("InvalidStatusRestriction", policy => policy.AddRequirements(new InvalidStatusRestrictionRequirement()));
+      });
 
-    services.AddScoped<TokenService>();
+      services.AddScoped<TokenService>();
 
-    return services;
+      return services;
+    }
   }
 }

@@ -1,0 +1,22 @@
+meter {
+  height: 24px;
+  width: 140px;
+  display: block;
+
+  // Making it look exactly like Progress.
+  margin-top: -6px;
+  margin-bottom: -6px;
+
+  &::-webkit-meter-bar {
+    background: none;
+    border: 1px solid $color;
+    background-color: $backgroundColor;
+    box-shadow: 0 5px 5px -5px rba(0, 0, 0, 0.5) inset;
+  }
+
+  &::-webkit-meter-optimum-value {
+    background-color: $color;
+    background-size: 100% 100%;
+    box-shadow: 0 5px 5px -5px #999 inset;
+  }
+}

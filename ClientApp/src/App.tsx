@@ -1,16 +1,24 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 
-import TestList from "Modules/Test/SmartComponents/List/TestList";
-import LoginForm from "Modules/Account/SmartComponents/LoginForm/LoginForm";
+import "./App.scss";
+
+import ErrorPage from "Views/_Common/Pages/ErrorPage";
+import ErrorBoundary from "Modules/Layout/BLC/Components/ErrorBoundary/ErrorBoundary";
+import { useStyleProperties } from "Modules/Layout/BLC/Hooks/useStyleProperties/useStyleProperties";
+import SuperLoadingIndicator from "Modules/Layout/Components/SuperLoadingIndicator/SuperLoadingIndicator";
+
+const RootLayout = lazy(() => import("Views/_Common/Layout/RootLayout"));
 
 export default function App() {
+  useStyleProperties();
+
   return (
     <div id="app">
-      <h1>TODO Tracker</h1>
-
-      <TestList />
-
-      <LoginForm />
+      <ErrorBoundary renderForError={<ErrorPage />}>
+        <Suspense fallback={<SuperLoadingIndicator />}>
+          <h1>Hello World!!</h1>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

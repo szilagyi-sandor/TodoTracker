@@ -1,38 +1,39 @@
-namespace Application.Tests;
-
-public class Create
+namespace Application.Tests
 {
-  public class Command : IRequest<Result<Unit>>
+  public class Create
   {
-    public Test Test { get; set; } = new Test();
-  }
-
-  public class CommandValidator : AbstractValidator<Command>
-  {
-    public CommandValidator()
+    public class Command : IRequest<Result<Unit>>
     {
-      RuleFor(x => x.Test).SetValidator(new TestValidator());
-    }
-  }
-
-  public class Handler : IRequestHandler<Command, Result<Unit>>
-  {
-    private readonly DataContext _context;
-    public Handler(DataContext context)
-    {
-      _context = context;
+      public Test Test { get; set; } = new Test();
     }
 
-    public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
+    public class CommandValidator : AbstractValidator<Command>
     {
-      _context.Tests.Add(request.Test);
+      public CommandValidator()
+      {
+        RuleFor(x => x.Test).SetValidator(new TestValidator());
+      }
+    }
 
-      var result = await _context.SaveChangesAsync() > 0;
+    public class Handler : IRequestHandler<Command, Result<Unit>>
+    {
+      private readonly DataContext _context;
+      public Handler(DataContext context)
+      {
+        _context = context;
+      }
 
-      if (!result)
-        return Result<Unit>.Fail("Failed to create the test.");
+      public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
+      {
+        _context.Tests.Add(request.Test);
 
-      return Result<Unit>.Success(Unit.Value);
+        var result = await _context.SaveChangesAsync() > 0;
+
+        if (!result)
+          return Result<Unit>.Fail(404);
+
+        return Result<Unit>.Success(Unit.Value);
+      }
     }
   }
 }

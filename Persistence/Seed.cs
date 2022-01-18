@@ -1,31 +1,42 @@
-namespace Persistence;
-
-public class Seed
+namespace Persistence
 {
-  public static async Task SeedData(DataContext context, UserManager<AppUser> userManager)
+  // CHECKED 1.0
+  public class Seed
   {
-    if (!userManager.Users.Any())
+    public static async Task SeedData(DataContext context, UserManager<AppUser> userManager)
     {
-      var users = new List<AppUser>{
-          new AppUser {
-            UserName = "TestUser",
-            Email = "test@test.com",
-            DisplayName = "Test User"
-          }
+      if (!userManager.Users.Any())
+      {
+        var adminUser = new AppUser
+        {
+          UserName = "adminuser@test.com",
+          Email = "adminuser@test.com",
+          DisplayName = "Admin User",
+          CreatedAt = new DateTime(2021, 07, 07),
+          Status = (int)UserStatusTypes.approved
         };
 
-      foreach (var user in users)
-      {
-        await userManager.CreateAsync(user, "Pa$$w0rd");
+        await userManager.CreateAsync(adminUser, "Pa$$w0rd");
+        await userManager.AddToRolesAsync(adminUser, new[] { "Admin" });
+
+        var testUser = new AppUser
+        {
+          UserName = "testuser@test.com",
+          Email = "testuser@test.com",
+          DisplayName = "Test User",
+          CreatedAt = new DateTime(2021, 08, 08),
+          Status = (int)UserStatusTypes.pending
+        };
+
+        await userManager.CreateAsync(testUser, "Pa$$w0rd");
       }
-    }
 
-    if (context.Tests.Any())
-    {
-      return;
-    }
+      if (context.Tests.Any())
+      {
+        return;
+      }
 
-    var tests = new List<Test>
+      var tests = new List<Test>
         {
           new Test
             {
@@ -79,8 +90,9 @@ public class Seed
             }
         };
 
-    await context.Tests.AddRangeAsync(tests);
+      await context.Tests.AddRangeAsync(tests);
 
-    await context.SaveChangesAsync();
+      await context.SaveChangesAsync();
+    }
   }
 }

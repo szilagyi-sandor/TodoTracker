@@ -1,34 +1,35 @@
-namespace Application.Tests;
-
-public class Delete
+namespace Application.Tests
 {
-  public class Command : IRequest<Result<Unit>>
+  public class Delete
   {
-    public Guid Id { get; set; }
-  }
-
-  public class Handler : IRequestHandler<Command, Result<Unit>?>
-  {
-    private readonly DataContext _context;
-    public Handler(DataContext context)
+    public class Command : IRequest<Result<Unit>>
     {
-      _context = context;
+      public Guid Id { get; set; }
     }
 
-    public async Task<Result<Unit>?> Handle(Command request, CancellationToken cancellationToken)
+    public class Handler : IRequestHandler<Command, Result<Unit>?>
     {
-      var test = await _context.Tests.FindAsync(request.Id);
+      private readonly DataContext _context;
+      public Handler(DataContext context)
+      {
+        _context = context;
+      }
 
-      if (test == null) return null;
+      public async Task<Result<Unit>?> Handle(Command request, CancellationToken cancellationToken)
+      {
+        var test = await _context.Tests.FindAsync(request.Id);
 
-      _context.Remove(test);
+        if (test == null) return null;
 
-      var result = await _context.SaveChangesAsync() > 0;
+        _context.Remove(test);
 
-      if (!result)
-        return Result<Unit>.Fail("Failed to delete the test.");
+        var result = await _context.SaveChangesAsync() > 0;
 
-      return Result<Unit>.Success(Unit.Value);
+        if (!result)
+          return Result<Unit>.Fail("Failed to delete the test.");
+
+        return Result<Unit>.Success(Unit.Value);
+      }
     }
   }
 }

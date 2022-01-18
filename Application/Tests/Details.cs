@@ -1,25 +1,31 @@
-namespace Application.Tests;
-
-public class Details
+namespace Application.Tests
 {
-  public class Query : IRequest<Result<Test>>
+  public class Details
   {
-    public Guid Id { get; set; }
-  }
-
-  public class Handler : IRequestHandler<Query, Result<Test>?>
-  {
-    private readonly DataContext _context;
-    public Handler(DataContext context)
+    public class Query : IRequest<Result<Test>>
     {
-      _context = context;
+      public Guid Id { get; set; }
     }
 
-    public async Task<Result<Test>?> Handle(Query request, CancellationToken cancellationToken)
+    public class Handler : IRequestHandler<Query, Result<Test>?>
     {
-      var test = await _context.Tests.FindAsync(request.Id);
+      private readonly DataContext _context;
+      public Handler(DataContext context)
+      {
+        _context = context;
+      }
 
-      return Result<Test>.Success(test);
+      public async Task<Result<Test>?> Handle(Query request, CancellationToken cancellationToken)
+      {
+        var test = await _context.Tests.FindAsync(request.Id);
+
+        if (test == null)
+        {
+          return Result<Test>.Fail(404);
+        }
+
+        return Result<Test>.Success(test);
+      }
     }
   }
 }

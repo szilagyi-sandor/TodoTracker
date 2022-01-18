@@ -1,18 +1,23 @@
+
+
+// CHECKED 1.0
+
+using Application.Users;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Services.
 
-builder.Services.AddControllers(opt =>
+builder.Services
+  .AddControllers(opt =>
   {
-    // TODO: Double check custom policies
     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
     opt.Filters.Add(new AuthorizeFilter(policy));
   })
   .AddFluentValidation(config =>
   {
-    // TODO: Change 'Create' class
-    config.RegisterValidatorsFromAssemblyContaining<Create>();
+    config.RegisterValidatorsFromAssemblyContaining<EditProfile>();
   });
 
 builder.Services.AddApplicationServices(builder.Configuration);

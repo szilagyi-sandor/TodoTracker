@@ -1,95 +1,138 @@
-namespace API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class AccountController : ControllerBase
+namespace API.Controllers
 {
-  private readonly SignInManager<AppUser> _signInManager;
-  private readonly UserManager<AppUser> _userManager;
-  private readonly TokenService _tokenService;
-  public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TokenService tokenService)
+  // CHECKED 1.0
+  [ApiController]
+  [Route("api/[controller]")]
+  public class AccountController : ControllerBase
   {
-    _userManager = userManager;
-    _tokenService = tokenService;
-    _signInManager = signInManager;
-  }
+    private readonly IMapper _mapper;
+    private readonly TokenService _tokenService;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly SignInManager<AppUser> _signInManager;
 
-  [HttpGet("me")]
-  public async Task<ActionResult<UserDto>> GetCurrentUser()
-  {
-    var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
-
-    // TODO: Automapper
-    return new UserDto
+    public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
+      TokenService tokenService, IMapper mapper)
     {
-      Id = user.Id,
-      DisplayName = user.DisplayName,
-      Token = _tokenService.CreateToken(user),
-      Username = user.UserName
-    };
-  }
-
-  [AllowAnonymous]
-  [HttpPost("login")]
-  public async Task<ActionResult<UserDto>> Login(LoginRequestDto request)
-  {
-    var user = await _userManager.FindByEmailAsync(request.Email);
-
-    if (user == null)
-      return Unauthorized();
-
-    var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-
-    if (!result.Succeeded)
-      return Unauthorized();
-
-    // TODO: AutoMapper
-    // TODO: Token handling
-    return new UserDto
-    {
-      Id = user.Id,
-      DisplayName = user.DisplayName,
-      Username = user.UserName,
-      Token = _tokenService.CreateToken(user)
-    };
-  }
-
-  [AllowAnonymous]
-  [HttpPost("register")]
-  public async Task<ActionResult<UserDto>> Register(RegisterRequestDto request)
-  {
-    if (await _userManager.Users.AnyAsync(x => x.Email == request.Email))
-    {
-      ModelState.AddModelError("email", "Already taken.");
-      return ValidationProblem();
+      _mapper = mapper;
+      _userManager = userManager;
+      _tokenService = tokenService;
+      _signInManager = signInManager;
     }
 
-    if (await _userManager.Users.AnyAsync(x => x.UserName == request.Username))
+    [HttpGet]
+    public async Task<ActionResult<AccountDto>> GetCurrentAccount()
     {
-      ModelState.AddModelError("username", "Already taken.");
-      return ValidationProblem();
+      var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+
+      if (user == null)
+        return Unauthorized();
+
+      var accountDto = _mapper.Map<AccountDto>(user);
+      accountDto.Token = await _tokenService.CreateToken(user);
+
+      return accountDto;
     }
 
-    // TODO: Automapper
-    var user = new AppUser
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<ActionResult<AccountDto>> Login(LoginRequestDto request)
     {
-      DisplayName = request.DisplayName,
-      Email = request.Email,
-      UserName = request.Username
-    };
+      var user = await _userManager.FindByEmailAsync(request.Email);
 
-    var result = await _userManager.CreateAsync(user, request.Password);
+      if (user == null)
+        return Unauthorized();
 
-    if (!result.Succeeded)
-      return BadRequest("Problem registering user.");
+      var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
 
-    // TODO: Automapper
-    return new UserDto
+      if (!result.Succeeded)
+        return Unauthorized();
+
+      var accountDto = _mapper.Map<AccountDto>(user);
+      accountDto.Token = await _tokenService.CreateToken(user);
+
+      return accountDto;
+    }
+
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<ActionResult<AccountDto>> Register(RegisterRequestDto request)
     {
-      Id = user.Id,
-      DisplayName = user.DisplayName,
-      Token = _tokenService.CreateToken(user),
-      Username = user.UserName
-    };
+      var user = _mapper.Map<AppUser>(request);
+
+      var result = await _userManager.CreateAsync(user, request.Password);
+
+      if (!result.Succeeded)
+      {
+        foreach (var error in result.Errors)
+        {
+          if (error.Code != "DuplicateUserName")
+          {
+            ModelState.AddModelError(error.Code, error.Description);
+          }
+        }
+
+        return ValidationProblem();
+      }
+
+      var accountDto = _mapper.Map<AccountDto>(user);
+      accountDto.Token = await _tokenService.CreateToken(user);
+
+      return accountDto;
+    }
+
+    [HttpPut("/email")]
+    public async Task<ActionResult<AccountDto>> EditEmail(EditEmailRequest request)
+    {
+      var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+
+      if (user == null)
+        return NotFound();
+
+      // TODO: If Email validation will be required use ChangeEmailAsync
+      // instead of SetEmailAsync.
+      await _userManager.SetEmailAsync(user, request.Email);
+      await _userManager.SetUserNameAsync(user, request.Email);
+
+      var accountDto = _mapper.Map<AccountDto>(user);
+      accountDto.Token = await _tokenService.CreateToken(user);
+
+      return accountDto;
+    }
+
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteMyself()
+    {
+      var user = await _userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
+
+      if (user == null)
+        return Unauthorized();
+
+      var result = await _userManager.DeleteAsync(user);
+
+      if (!result.Succeeded)
+        return StatusCode(500, "Problem occured while deleting the User.");
+
+      return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    // Deleted Users with valid token will still able to call simply protected endpoints. 
+    // To prevent endpoints from this use the InvalidUserRestriction policy.
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+      var user = await _userManager.Users.SingleOrDefaultAsync(u => u.Id == id);
+
+      if (user == null)
+        return NotFound();
+
+      var result = await _userManager.DeleteAsync(user);
+
+      if (!result.Succeeded)
+        return StatusCode(500, "Problem occured while deleting the User.");
+
+      return Ok();
+    }
   }
 }

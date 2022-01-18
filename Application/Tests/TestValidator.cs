@@ -1,10 +1,11 @@
-namespace Application.Tests;
-
-public class TestValidator : AbstractValidator<Test>
+namespace Application.Tests
 {
-  public TestValidator()
+  public class TestValidator : AbstractValidator<Test>
   {
-    RuleFor(x => x.Title).NotEmpty();
-    RuleFor(x => x.Date).NotEmpty();
+    public TestValidator()
+    {
+      RuleFor(x => x.Title).NotEmpty();
+      RuleFor(x => x.Date).NotEmpty();
+    }
   }
 }

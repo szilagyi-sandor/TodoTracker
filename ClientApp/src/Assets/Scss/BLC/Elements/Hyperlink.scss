@@ -1,0 +1,25 @@
+a {
+  outline: none;
+  display: inline;
+  cursor: pointer;
+  line-height: 1.4;
+  color: $primaryColor;
+  text-decoration: underline;
+  transition-property: color;
+  transition-duration: 320ms;
+  transition-timing-function: linear;
+
+  // Unvisited.
+  &:link {
+    color: $primaryColor;
+  }
+
+  &:visited {
+    color: $color;
+  }
+
+  &:hover {
+    color: $color;
+    text-decoration: underline;
+  }
+}

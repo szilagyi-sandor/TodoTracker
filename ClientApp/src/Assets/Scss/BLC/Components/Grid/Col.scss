@@ -1,0 +1,63 @@
+@use "sass:map";
+@use "sass:math";
+
+// There are 3 type of width: specified (1-12), equal, auto.
+.col {
+  width: 100%;
+  position: relative;
+  padding-left: $gridPadding;
+  padding-right: $gridPadding;
+
+  // Taking care of default cases. They are not part
+  // of the gridMapper.
+  @for $i from 1 through 12 {
+    &.dfCol#{$i} {
+      flex: 0 0 math.div(100%, 12) * $i;
+      max-width: math.div(100%, 12) * $i;
+    }
+
+    &.dfOffset#{$i} {
+      margin-left: math.div(100%, 12) * $i;
+    }
+  }
+
+  &.dfColEqual {
+    flex-grow: 1;
+    flex-basis: 0;
+    max-width: 100%;
+  }
+
+  &.dfColAuto {
+    width: auto;
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+
+  // Taking care of the cases included in the gridMapper.
+  @each $name, $values in $gridMapper {
+    @media (min-width: map.get($values, "break")) {
+      @for $i from 1 through 12 {
+        &.#{$name}Col#{$i} {
+          flex: 0 0 math.div(100%, 12) * $i;
+          max-width: math.div(100%, 12) * $i;
+        }
+
+        &.#{$name}Offset#{$i} {
+          margin-left: math.div(100%, 12) * $i;
+        }
+      }
+
+      &.#{$name}ColEqual {
+        flex-grow: 1;
+        flex-basis: 0;
+        max-width: 100%;
+      }
+
+      &.#{$name}ColAuto {
+        width: auto;
+        flex: 0 0 auto;
+        max-width: 100%;
+      }
+    }
+  }
+}

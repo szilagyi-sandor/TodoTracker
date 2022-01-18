@@ -1,0 +1,11 @@
+.siteLayout {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 100vh;
+  min-height: calc(var(--vhs, 1vh) * 100);
+
+  .content {
+    flex-grow: 1;
+  }
+}

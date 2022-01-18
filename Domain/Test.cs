@@ -1,10 +1,12 @@
-namespace Domain;
-
-public class Test
+namespace Domain
 {
-  public Test() { }
+  // TODO: DELETE
+  public class Test
+  {
+    public Test() { }
 
-  public Guid Id { get; set; }
-  public DateTime Date { get; set; }
-  public string Title { get; set; } = "";
+    public Guid Id { get; set; }
+    public DateTime Date { get; set; }
+    public string Title { get; set; } = "";
+  }
 }

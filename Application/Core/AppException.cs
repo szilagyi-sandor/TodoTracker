@@ -1,15 +1,19 @@
-namespace Application.Core;
-
-public class AppException
+namespace Application.Core
 {
-  public AppException(int statusCode, string message, string? details)
+  // CHECKED 1.0
+  public class AppException
   {
-    Details = details ?? "";
-    Message = message;
-    StatusCode = statusCode;
-  }
+    public string? Message { get; set; }
+    public string? Details { get; set; }
+    public int? StatusCode { get; set; }
+    public int? ErrorTypeId { get; set; }
 
-  public int StatusCode { get; set; }
-  public string Message { get; set; }
-  public string Details { get; set; }
+    public AppException(int? statusCode, int? errorTypeId, string? message, string? details = null)
+    {
+      Message = message;
+      Details = details;
+      StatusCode = statusCode;
+      ErrorTypeId = errorTypeId;
+    }
+  }
 }

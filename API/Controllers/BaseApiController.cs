@@ -1,25 +1,36 @@
-namespace API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class BaseApiController : ControllerBase
+namespace API.Controllers
 {
-  private IMediator? _mediator;
-
-  protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetRequiredService<IMediator>();
-
-  // TODO: Check out better, especially notFound
-  protected ActionResult HandleResult<T>(Result<T> result)
+  // CHECKED 1.0
+  [ApiController]
+  [Route("api/[controller]")]
+  public class BaseApiController : ControllerBase
   {
-    if (result == null)
-      return NotFound();
+    private IMediator? _mediator;
+    protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetRequiredService<IMediator>();
 
-    if (result.isSuccess && result.Value != null)
-      return Ok(result.Value);
+    protected ActionResult HandleResult<T>(Result<T> result)
+    {
+      if (result.isSuccess && result.Value != null)
+        return Ok(result.Value);
 
-    if (result.isSuccess && result.Value == null)
-      return NotFound();
+      var err = new AppException(result.StatusCode, result.ErrorTypeId, result.ErrorMessage);
 
-    return BadRequest();
+      if (!result.isSuccess)
+      {
+        switch (result.StatusCode)
+        {
+          case 404:
+            return NotFound(err);
+
+          case 500:
+            return StatusCode(500, err);
+
+          default:
+            return BadRequest(err);
+        }
+      }
+
+      return BadRequest(err);
+    }
   }
 }

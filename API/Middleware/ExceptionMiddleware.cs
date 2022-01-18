@@ -1,39 +1,44 @@
-namespace API.Middleware;
 
-public class ExceptionMiddleware
+
+namespace API.Middleware
 {
-  private readonly IHostEnvironment _env;
-  private readonly RequestDelegate _next;
-  private readonly ILogger<ExceptionMiddleware> _logger;
-  public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
+  // CHECKED 1.0
+  public class ExceptionMiddleware
   {
-    _env = env;
-    _next = next;
-    _logger = logger;
+    private readonly RequestDelegate _next;
+    private readonly IHostEnvironment _env;
+    private readonly ILogger<ExceptionMiddleware> _logger;
 
-  }
-
-  public async Task InvokeAsync(HttpContext context)
-  {
-    try
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
     {
-      await _next(context);
+      _env = env;
+      _next = next;
+      _logger = logger;
     }
-    catch (Exception ex)
+
+    public async Task InvokeAsync(HttpContext context)
     {
-      _logger.LogError(ex, ex.Message);
-      context.Response.ContentType = "application/json";
-      context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+      try
+      {
+        await _next(context);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, ex.Message);
 
-      var response = _env.IsDevelopment()
-       ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace?.ToString())
-       : new AppException(context.Response.StatusCode, "Server Error.", ex.StackTrace?.ToString());
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-      var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var response = _env.IsDevelopment()
+         ? new AppException(context.Response.StatusCode, (int)ErrorTypes.Unhandled, ex.Message, ex.StackTrace?.ToString())
+         : new AppException(context.Response.StatusCode, (int)ErrorTypes.Unhandled, "Server Error.");
 
-      var json = JsonSerializer.Serialize(response, options);
+        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
-      await context.Response.WriteAsync(json);
+        var json = JsonSerializer.Serialize(response, options);
+
+        await context.Response.WriteAsync(json);
+      }
     }
   }
 }

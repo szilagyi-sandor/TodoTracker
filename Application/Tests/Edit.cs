@@ -1,44 +1,45 @@
-namespace Application.Tests;
-
-public class Edit
+namespace Application.Tests
 {
-  public class Command : IRequest<Result<Unit>>
+  public class Edit
   {
-    public Test Test { get; set; } = new Test();
-  }
-
-  public class CommandValidator : AbstractValidator<Command>
-  {
-    public CommandValidator()
+    public class Command : IRequest<Result<Unit>>
     {
-      RuleFor(x => x.Test).SetValidator(new TestValidator());
-    }
-  }
-
-  public class Handler : IRequestHandler<Command, Result<Unit>?>
-  {
-    private readonly IMapper _mapper;
-    private readonly DataContext _context;
-    public Handler(DataContext context, IMapper mapper)
-    {
-      _mapper = mapper;
-      _context = context;
+      public Test Test { get; set; } = new Test();
     }
 
-    public async Task<Result<Unit>?> Handle(Command request, CancellationToken cancellationToken)
+    public class CommandValidator : AbstractValidator<Command>
     {
-      var test = await _context.Tests.FindAsync(request.Test.Id);
+      public CommandValidator()
+      {
+        RuleFor(x => x.Test).SetValidator(new TestValidator());
+      }
+    }
 
-      if (test == null) return null;
+    public class Handler : IRequestHandler<Command, Result<Unit>?>
+    {
+      private readonly IMapper _mapper;
+      private readonly DataContext _context;
+      public Handler(DataContext context, IMapper mapper)
+      {
+        _mapper = mapper;
+        _context = context;
+      }
 
-      _mapper.Map(request.Test, test);
+      public async Task<Result<Unit>?> Handle(Command request, CancellationToken cancellationToken)
+      {
+        var test = await _context.Tests.FindAsync(request.Test.Id);
 
-      var result = await _context.SaveChangesAsync() > 0;
+        if (test == null) return null;
 
-      if (!result)
-        return Result<Unit>.Fail("Failed to update the test.");
+        _mapper.Map(request.Test, test);
 
-      return Result<Unit>.Success(Unit.Value);
+        var result = await _context.SaveChangesAsync() > 0;
+
+        if (!result)
+          return Result<Unit>.Fail("Failed to update the test.");
+
+        return Result<Unit>.Success(Unit.Value);
+      }
     }
   }
 }

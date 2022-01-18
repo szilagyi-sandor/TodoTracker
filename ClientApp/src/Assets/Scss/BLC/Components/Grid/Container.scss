@@ -1,0 +1,23 @@
+@use "sass:map";
+
+@mixin createContainer {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-right: $gridPadding;
+  padding-left: $gridPadding;
+
+  @each $name, $values in $gridMapper {
+    @media (min-width: map.get($values, "break")) {
+      max-width: map.get($values, "width");
+    }
+  }
+
+  &.fullWidth {
+    max-width: 100%;
+  }
+}
+
+.container {
+  @include createContainer;
+}

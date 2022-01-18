@@ -1,0 +1,31 @@
+button {
+  margin: 0;
+  outline: none;
+  color: $color;
+  cursor: pointer;
+  background: none;
+  font-weight: 400;
+  font-size: 1.6rem;
+  padding: 4px 16px;
+  user-select: none;
+  overflow: visible;
+  border-radius: 4px;
+  text-align: center;
+  font-family: $font;
+  display: inline-block;
+  border: 1px solid $color;
+
+  transition-duration: 320ms;
+  transition-timing-function: linear;
+  transition-property: color, border-color, opacity, background-color;
+
+  &.active,
+  &:hover:not(:disabled) {
+    color: $primaryColor;
+    border-color: $primaryColor;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
